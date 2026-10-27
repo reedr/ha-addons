@@ -1,0 +1,27 @@
+name: LLM Loaded-Model Proxy
+version: "0.1.0"
+slug: llm_loaded_proxy
+description: OpenAI-compatible proxy that sends every request to whatever model the llama.cpp router has loaded
+url: https://github.com/reedr/ha-addons/tree/main/llm_loaded_proxy
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+ports:
+  8080/tcp: null
+ports_description:
+  8080/tcp: Proxy port on the host (not needed for other add-ons, which use the add-on hostname)
+options:
+  upstream: http://10.0.1.161:8080
+  wait_seconds: 30
+  cache_seconds: 5
+  fallback_model: ""
+  log_requests: true
+schema:
+  upstream: url
+  wait_seconds: int(0,300)
+  cache_seconds: int(0,60)
+  fallback_model: str?
+  log_requests: bool
