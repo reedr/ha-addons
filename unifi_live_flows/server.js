@@ -230,10 +230,16 @@ async function enrich(flows) {
 
 function record(f) {
   const n = names.get(String(f.flow_id)) || { source: {}, destination: {} };
-  const ip = f.ip || {}, st = f.stats || {};
+  const ip = f.ip || {};
+  // The gateway counts routes between two of its LAN bridges (e.g. br0 -> br40, Default -> CAM) the other way
+  // round: on 11/17 all 17 Frigate camera pulls on br0 -> br40 showed the video as tx, while the same pulls over
+  // the gate tunnel (-> wgsts1000) and internet flows (-> eth8) were right. Bytes and packets are swapped back here.
+  const swapped = /^br/.test(f.in || "") && /^br/.test(f.out || "");
+  const raw = f.stats || {};
+  const st = swapped ? { txBytes: raw.rxBytes, rxBytes: raw.txBytes, txPackets: raw.rxPackets, rxPackets: raw.txPackets } : raw;
   const end = Date.parse(f.timestamp) || Date.now(), start = Date.parse(f.flow_start) || end;
   return {
-    id: String(f.flow_id), live: true, status: f.status, state: f.state, in_iface: f.in, out_iface: f.out,
+    id: String(f.flow_id), live: true, status: f.status, state: f.state, in_iface: f.in, out_iface: f.out, counters_swapped: swapped,
     source: Object.assign({ ip: ip.saddr }, n.source, { port: ip.sport }),
     destination: Object.assign({ ip: ip.daddr }, n.destination, { port: ip.dport }),
     protocol: PROTO[ip.protocol] || String(ip.protocol), direction: n.direction || "", action: "allowed",

@@ -35,8 +35,9 @@ session commands (`api.err.NoPermission`). So it needs a **local UniFi account w
 
 - The gateway offers a LAN ICE candidate, so no TURN relay is used from inside the house.
 - The gateway caps the live list at 100 connections (its top 100), whatever `page_size` is.
-- Byte direction is as the gateway counts it: on routes between house VLANs (e.g. `br0 -> br40`) tx/rx come out swapped
-  compared with routes through the WireGuard tunnel (`-> wgsts1000`), probably hardware offload accounting.
+- The gateway counts routes between two of its LAN bridges (`br* -> br*`, e.g. Default -> CAM) the other way round;
+  the app swaps those bytes/packets back (`counters_swapped: true`). Tunnel (`wgsts*`) and internet (`eth*`) routes
+  are left as reported. Verified on `br0 -> br40`; other bridge pairs are assumed to behave the same.
 - Long-lived connections rarely appear in the v2 flow log, which is why the log never showed active connections.
 - aiortc (Python) completes ICE with the gateway but never DTLS; libdatachannel works.
 - The Home Assistant side is `pyscript.unifi_flows` with `live: true` (ha-rmr repo).
