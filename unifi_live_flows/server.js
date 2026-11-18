@@ -241,7 +241,10 @@ function record(f) {
   return {
     id: String(f.flow_id), live: true, status: f.status, state: f.state, in_iface: f.in, out_iface: f.out, counters_swapped: swapped,
     source: Object.assign({ ip: ip.saddr }, n.source, { port: ip.sport }),
-    destination: Object.assign({ ip: ip.daddr }, n.destination, { port: ip.dport }),
+    // f.hostnames = the gateway's own DNS-snooped name(s) for this flow's destination (on ~60% of live flows);
+    // they come first, ahead of whatever traffic-flows/enrich found.
+    destination: Object.assign({ ip: ip.daddr }, n.destination, { port: ip.dport,
+      domains: [...new Set([...(Array.isArray(f.hostnames) ? f.hostnames : []), ...((n.destination || {}).domains || [])])].filter(Boolean) }),
     protocol: PROTO[ip.protocol] || String(ip.protocol), direction: n.direction || "", action: "allowed",
     application: f.dpi || null, service: "",
     traffic_data: { bytes_tx: st.txBytes || 0, bytes_rx: st.rxBytes || 0, packets_tx: st.txPackets || 0, packets_rx: st.rxPackets || 0,
