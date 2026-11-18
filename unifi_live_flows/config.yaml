@@ -1,0 +1,33 @@
+name: UniFi Live Flows
+version: "0.1.0"
+slug: unifi_live_flows
+description: Serves the UniFi gateway's live (active) connections to Home Assistant over the Network app's WebRTC trafficflow channel
+url: https://github.com/reedr/ha-addons/tree/main/unifi_live_flows
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+ports:
+  8099/tcp: null
+ports_description:
+  8099/tcp: HTTP API on the host (not needed by Home Assistant, which uses the app hostname)
+options:
+  host: 10.0.1.1
+  site: default
+  username: ""
+  password: ""
+  gateway_mac: ""
+  page_size: 100
+  max_flows: 3000
+  idle_seconds: 120
+schema:
+  host: str
+  site: str
+  username: str
+  password: password
+  gateway_mac: str?
+  page_size: int(10,1000)
+  max_flows: int(100,20000)
+  idle_seconds: int(30,3600)
